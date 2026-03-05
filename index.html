@@ -1,0 +1,1740 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <title>CureCoin Blockchain Explorer</title>
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1" name="viewport"/>
+    <meta content="CureCoin Blockchain Explorer - View blocks, transactions, and addresses on the CureCoin network"
+          name="description">
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        /* Core responsive fixes */
+        body {
+            padding-top: 70px;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        /* Mobile-friendly text handling */
+        .block-hash, .txid, .address {
+            font-family: monospace;
+            font-size: 12px;
+            word-break: break-all;
+            word-wrap: break-word;
+            white-space: pre-wrap;
+        }
+
+        /* Responsive tables */
+        .table-responsive {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* Responsive container */
+        .container {
+            padding-left: 10px;
+            padding-right: 10px;
+        }
+
+        /* Responsive tabs */
+        .nav-tabs {
+            white-space: nowrap;
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
+            position: relative;
+            margin: 0;
+            padding: 0;
+            width: 100%;
+        }
+
+        .nav-tabs > li {
+            float: left;
+            display: block;
+            margin: 0;
+            padding: 0;
+        }
+
+        .nav-tabs > li > a {
+            padding: 10px 12px;
+            font-size: 14px;
+            white-space: nowrap;
+            display: block;
+            min-width: 80px;
+            text-align: center;
+        }
+
+        /* Responsive block items */
+        .block-item {
+            padding: 12px;
+            margin-bottom: 15px;
+            font-size: 13px;
+        }
+
+        .block-header h4 {
+            font-size: 16px;
+            margin-top: 0;
+        }
+
+        .block-header p {
+            margin: 5px 0;
+        }
+
+        /* Responsive transaction items */
+        .transaction-item {
+            padding: 12px;
+            margin-bottom: 15px;
+            font-size: 13px;
+        }
+
+        .transaction-item h4 {
+            font-size: 16px;
+            margin-top: 0;
+        }
+
+        .transaction-item p {
+            margin: 5px 0;
+        }
+
+        /* Responsive pagination */
+        .pagination {
+            margin: 20px 0;
+        }
+
+        .pagination > li > a,
+        .pagination > li > span {
+            padding: 5px 10px;
+            font-size: 14px;
+        }
+
+        /* Responsive search form */
+        .search-form .form-control {
+            padding: 8px 12px;
+            font-size: 16px;
+        }
+
+        .search-form .btn {
+            padding: 8px 15px;
+            font-size: 16px;
+        }
+
+        /* Responsive headers */
+        h2 {
+            font-size: 20px;
+        }
+
+        h4 {
+            font-size: 16px;
+        }
+
+        /* Responsive footer */
+        .footer {
+            font-size: 12px;
+            padding: 15px 0;
+        }
+
+        /* Responsive loading and error messages */
+        .loading, .error {
+            padding: 15px;
+            font-size: 14px;
+        }
+
+        /* Dark mode adjustments */
+        body.dark-mode {
+            background-color: #121212;
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .table {
+            color: inherit;
+        }
+
+        body.dark-mode .table th,
+        body.dark-mode .table td {
+            border-color: #333;
+        }
+
+        body.dark-mode .btn-outline-secondary {
+            color: #bbb;
+            border-color: #bbb;
+        }
+
+        body.dark-mode .btn-outline-secondary:hover {
+            background-color: #444;
+            color: #fff;
+        }
+
+        body.dark-mode .block-item {
+            background-color: #1e1e1e;
+            color: #e0e0e0;
+            border: 1px solid #333;
+            padding: 12px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+        }
+
+        body.dark-mode .block-item .block-header h4,
+        body.dark-mode .block-item .block-header p,
+        body.dark-mode .block-header a {
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .block-item .block-link {
+            color: #b3b3b3;
+        }
+
+        body.dark-mode .block-item .block-link:hover {
+            color: #a0a0a0;
+        }
+
+        body.dark-mode .table,
+        body.dark-mode .table th,
+        body.dark-mode .table td {
+            background-color: #2c2c2c;
+            color: #e0e0e0;
+            border-color: #444;
+        }
+
+        body.dark-mode .table th {
+            background-color: #3a3a3a;
+        }
+
+        body.dark-mode .pagination a {
+            color: #d0d0d0;
+        }
+
+        body.dark-mode .pagination .active a,
+        body.dark-mode .pagination .disabled a {
+            color: #808080;
+        }
+
+        body.dark-mode .nav-tabs .nav-link.active,
+        body.dark-mode .nav-tabs .nav-link:hover {
+            background-color: #3a3a3a;
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .transaction-item {
+            background-color: #1e1e1e;
+            color: #e0e0e0;
+            border: 1px solid #333;
+        }
+
+        body.dark-mode .transaction-item h4,
+        body.dark-mode .transaction-item p,
+        body.dark-mode .transaction-item a {
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .transaction-item a:hover {
+            color: #b3b3b3;
+        }
+
+        body.dark-mode .transaction-item table {
+            background-color: #2b2b2b;
+        }
+
+        /* Responsive adjustments for small screens */
+        @media (max-width: 768px) {
+            body {
+                padding-top: 60px;
+                font-size: 13px;
+            }
+
+            .container {
+                padding-left: 5px;
+                padding-right: 5px;
+            }
+
+            .nav-tabs > li > a {
+                padding: 8px 10px;
+                font-size: 13px;
+                min-width: 70px;
+            }
+
+            .block-item {
+                padding: 10px;
+                font-size: 12px;
+            }
+
+            .transaction-item {
+                padding: 10px;
+                font-size: 12px;
+            }
+
+            .block-header h4 {
+                font-size: 15px;
+            }
+
+            .block-header p {
+                font-size: 12px;
+            }
+
+            .transaction-item h4 {
+                font-size: 15px;
+            }
+
+            .transaction-item p {
+                font-size: 12px;
+            }
+
+            .pagination > li > a,
+            .pagination > li > span {
+                padding: 4px 8px;
+                font-size: 12px;
+            }
+
+            .search-form .form-control {
+                padding: 6px 10px;
+                font-size: 14px;
+            }
+
+            .search-form .btn {
+                padding: 6px 12px;
+                font-size: 14px;
+            }
+
+            .footer {
+                font-size: 11px;
+            }
+
+            .loading, .error {
+                padding: 10px;
+                font-size: 13px;
+            }
+
+            h2 {
+                font-size: 18px;
+            }
+
+            h4 {
+                font-size: 14px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                font-size: 12px;
+            }
+
+            .nav-tabs > li > a {
+                padding: 6px 8px;
+                font-size: 12px;
+                min-width: 60px;
+            }
+
+            .block-item {
+                padding: 8px;
+                font-size: 11px;
+            }
+
+            .transaction-item {
+                padding: 8px;
+                font-size: 11px;
+            }
+
+            .block-header h4, .transaction-item h4 {
+                font-size: 13px;
+            }
+
+            .block-header p, .transaction-item p {
+                font-size: 11px;
+            }
+
+            .pagination > li > a,
+            .pagination > li > span {
+                padding: 3px 6px;
+                font-size: 11px;
+            }
+
+            .search-form .form-control {
+                padding: 5px 8px;
+                font-size: 13px;
+            }
+
+            .search-form .btn {
+                padding: 5px 10px;
+                font-size: 13px;
+            }
+
+            .footer {
+                font-size: 10px;
+            }
+
+            h2 {
+                font-size: 16px;
+            }
+
+            h4 {
+                font-size: 13px;
+            }
+        }
+
+        /* Additional responsive fixes */
+        .table-responsive {
+            margin: 10px 0;
+        }
+
+        .table-responsive table {
+            min-width: 100%;
+        }
+
+        .table-responsive thead,
+        .table-responsive tbody,
+        .table-responsive th,
+        .table-responsive td {
+            white-space: nowrap;
+        }
+
+        .table-responsive td,
+        .table-responsive th {
+            min-width: 80px;
+        }
+
+        /* Ensure links don't overflow */
+        a {
+            word-wrap: break-word;
+        }
+
+        /* Fix for long transaction IDs and addresses */
+        .txid, .address {
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: block;
+        }
+
+        /* Prevent horizontal scrolling */
+        html, body {
+            overflow-x: hidden;
+        }
+
+        /* Ensure all elements are responsive */
+        .form-control, .btn {
+            max-width: 100%;
+        }
+
+        /* Fix for tab overflow - NEW SOLUTION */
+        .nav-tabs-container {
+            overflow: hidden;
+            padding: 0;
+            margin: 0;
+            width: 100%;
+            position: relative;
+        }
+
+        .nav-tabs-container .nav-tabs {
+            width: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        .nav-tabs-container .nav-tabs > li {
+            float: left;
+            display: block;
+            margin: 0;
+            padding: 0;
+        }
+
+        .nav-tabs-container .nav-tabs > li > a {
+            display: block;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            min-width: 80px;
+            text-align: center;
+        }
+
+        /* Remove any potential overflow */
+        .nav-tabs-container {
+            overflow: hidden !important;
+        }
+    </style>
+</head>
+<body>
+<header class="py-2 mb-4 border-bottom" id="explorerHeader">
+    <div class="container d-flex justify-content-between align-items-center">
+        <h2 class="mb-0">CureCoin Explorer</h2>
+        <div class="d-flex align-items-center">
+            <span class="me-3" id="currentHeight"></span>
+            <button class="btn btn-outline-secondary btn-sm" id="themeToggle">
+                Dark Mode
+            </button>
+        </div>
+    </div>
+</header>
+<div class="container">
+    <div class="nav-tabs-container">
+        <ul class="nav nav-tabs" id="mainTabs">
+            <li id="blocksTab"><a data-tab="blocks" href="#">Latest Blocks</a></li>
+            <li id="searchTab"><a data-tab="search" href="#">Search</a></li>
+            <li class="hidden" id="blockDetailsTab"><a data-tab="block" href="#">Block Details</a></li>
+            <li class="hidden" id="txDetailsTab"><a data-tab="tx" href="#">Transaction Details</a></li>
+            <li class="hidden" id="addressHistoryTab"><a data-tab="address" href="#">Address History</a></li>
+            <li class="hidden" id="utxoTab"><a data-tab="utxo" href="#">Address UTXOs</a></li>
+        </ul>
+    </div>
+    <div class="tab-content">
+        <!-- Latest Blocks -->
+        <div class="tab-pane active" id="blocksTabContent">
+            <h2>Latest Blocks</h2>
+            <div class="refresh-info">
+                Last updated: <span id="lastUpdated">Loading...</span>
+                <span id="autoRefreshStatus"> | Auto-refresh: ON</span>
+                <button class="btn btn-xs btn-default pull-right" id="toggleAutoRefresh">Disable Auto-refresh</button>
+            </div>
+            <div class="loading" id="loadingBlocks">Loading blocks...</div>
+            <div class="error" id="errorBlocks" style="display:none;"></div>
+            <div class="small-muted" id="noBlocks" style="display:none;">No blocks found.</div>
+            <div id="blocksContainer"></div>
+            <div class="pagination-container" id="paginationContainer" style="display:none;">
+                <ul class="pagination" id="pagination"></ul>
+                <p class="small-muted" id="paginationInfo"></p>
+            </div>
+        </div>
+        <!-- Search -->
+        <div class="tab-pane" id="searchTabContent">
+            <h2>Search</h2>
+            <div class="search-form">
+                <div class="form-group">
+                    <input class="form-control"
+                           id="searchQuery"
+                           name="search"
+                           placeholder="Enter block height, transaction ID (64 hex), or address (20‑45 chars)"
+                           tabindex="0"
+                           type="text"/>
+                    <button class="btn btn-primary" id="searchButton">Search</button>
+                </div>
+            </div>
+            <div class="loading" id="loadingSearch" style="display:none;">Searching...</div>
+            <div class="error" id="errorSearch" style="display:none;"></div>
+            <div id="searchResults"></div>
+        </div>
+        <!-- Block Details -->
+        <div class="tab-pane" id="blockDetailsTabContent">
+            <h2>Block Details</h2>
+            <div class="loading" id="loadingBlock" style="display:none;">Loading block...</div>
+            <div class="error" id="errorBlock" style="display:none;"></div>
+            <div id="blockDetailsContainer"></div>
+            <h4>Transactions</h4>
+            <div class="loading" id="loadingBlockTxs" style="display:none;">Loading transactions...</div>
+            <div class="error" id="errorBlockTxs" style="display:none;"></div>
+            <div class="small-muted" id="noBlockTxs" style="display:none;">No transactions found in this block.</div>
+            <div id="blockTransactionsContainer"></div>
+        </div>
+        <!-- Transaction Details -->
+        <div class="tab-pane" id="txDetailsTabContent">
+            <h2>Transaction Details</h2>
+            <div class="loading" id="loadingTx" style="display:none;">Loading transaction...</div>
+            <div class="error" id="errorTx" style="display:none;"></div>
+            <div id="txDetailsContainer"></div>
+        </div>
+        <!-- Address History -->
+        <div class="tab-pane" id="addressHistoryTabContent">
+            <h2>Address History</h2>
+            <div class="loading" id="loadingAddress" style="display:none;">Loading address history...</div>
+            <div class="error" id="errorAddress" style="display:none;"></div>
+            <div id="addressHistoryContainer"></div>
+            <div class="pagination-container" id="addressPaginationContainer" style="display:none;">
+                <ul class="pagination" id="addressPagination"></ul>
+                <p class="small-muted" id="addressPaginationInfo"></p>
+            </div>
+        </div>
+        <!-- Address UTXOs -->
+        <div class="tab-pane" id="utxoTabContent">
+            <h2>Address UTXOs</h2>
+            <div class="loading" id="loadingUtxo" style="display:none;">Loading UTXOs...</div>
+            <div class="error" id="errorUtxo" style="display:none;"></div>
+            <div id="utxoContainer"></div>
+        </div>
+    </div>
+    <div class="footer text-center">
+        <div>Connected to <a href="https://curecoin.net">CureCoin</a> Network • Symbol: CURE</div>
+        <div>This BlockChain Explorer is built with ❤ By <a href="https://triii.org">Triii Technologies LLC</a> as an open source contribution to <a href="https://cureoreum.com">Cureoreum.com</a> Version:
+            <span id="app-version"></span></div>
+    </div>
+</div>
+<script>
+    const VERSION = "0.9.9-prerelease";
+    $("#app-version").text(VERSION);
+    const state = {
+        activeTab: 'blocks',
+        blocks: [],
+        currentBlock: null,
+        blockTransactions: [],
+        currentTx: null,
+        currentAddressHistory: null,
+        currentUtxos: [],
+        searchQuery: '',
+        searchResults: null,
+        loadingBlocks: false,
+        loadingBlock: false,
+        loadingBlockTxs: false,
+        loadingTx: false,
+        loadingAddress: false,
+        loadingUtxo: false,
+        loadingSearch: false,
+        lastUpdated: new Date(),
+        autoRefreshEnabled: true,
+        showBalance: false,
+        currentPage: 1,
+        blocksPerPage: 10,
+        totalBlocks: 0,
+        totalPages: 0,
+        pages: [],
+        API_BASE: 'https://cureoreum.com/api',//Change this to your api url
+        errorSearch: '',
+        currentAddressPage: 1,
+        currentAddressTotalPages: 1,
+    };
+
+    function formatDate(ts) {
+        if (!ts && ts !== 0) return '';
+        const t = ts > 1e12 ? ts : ts * 1000;
+        return new Date(t).toLocaleString();
+    }
+
+    function loadAddressTxCount(address, page = 1) {
+        $.get(`${state.API_BASE}/address/${encodeURIComponent(address)}/txs/count`)
+            .done(resp => {
+                const totalTx = typeof resp.count === 'number' ? resp.count : 0;
+                const totalPages = Math.ceil(totalTx / 50);
+                state.currentAddressPage = page;
+                state.currentAddressTotalPages = totalPages;
+                renderAddressPagination();
+            })
+            .fail(err => {
+                console.warn('count error', err);
+                state.currentAddressTotalPages = 1;
+                renderAddressPagination();
+            });
+    }
+
+    function parseUrlParams() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const q = urlParams.get('q');
+        const tab = urlParams.get('tab');
+        const page = urlParams.get('page');
+        const blockHeight = urlParams.get('blockHeight') || urlParams.get('blockheight') || urlParams.get('block') || urlParams.get('height');
+        const blockHash = urlParams.get('blockHash') || urlParams.get('blockhash');
+        const txHash = urlParams.get('txHash') || urlParams.get('txhash');
+        const addressParam = urlParams.get('address');
+
+
+        if (tab) setActiveTab(tab);
+        if (page) state.currentPage = parseInt(page, 10);
+        if (blockHash) {
+            setActiveTab('block');
+            showBlockByHash(blockHash);
+        } else if (blockHeight) {
+            setActiveTab('block');
+            showBlock(blockHeight);
+        } else if (txHash) {
+            setActiveTab('tx');
+            loadTransaction(txHash);
+        } else if (addressParam) {
+            setActiveTab('address');
+            const page2 = page ? parseInt(page, 10) : 1;
+            loadAddressHistory(addressParam, page2);
+        } else {
+            if (q) {
+                $('#searchQuery').val(q);
+                setTimeout(search, 50);
+                if (/^\d+$/.test(q))
+                    setTimeout(() => showBlock(q), 100);
+            }
+        }
+        if (history.replaceState) {
+            history.replaceState(null, '', window.location.pathname);
+        } else {
+            window.location.replace(window.location.pathname);
+        }
+    }
+
+    function init() {
+        initHeader();
+        loadLatestBlocks();
+        fetchLatestHeight();
+        parseUrlParams();
+        setInterval(() => {
+            if (state.autoRefreshEnabled && state.activeTab === 'blocks' && state.currentPage === 1) {
+                loadLatestBlocks(state.currentPage);
+            }
+            fetchLatestHeight();
+        }, 30000);
+        setupEventListeners();
+    }
+
+    function setupEventListeners() {
+        $('.nav-tabs a').on('click', e => {
+            e.preventDefault();
+            const tab = $(e.currentTarget).data('tab');
+            setActiveTab(tab);
+        });
+        $('#searchButton').on('click', search);
+        $('#searchQuery').on('keypress', function (e) {
+            if (e.which === 13) {
+                search();
+                e.preventDefault();
+            }
+        });
+        $('#toggleAutoRefresh').on('click', toggleAutoRefresh);
+    }
+
+    function setActiveTab(tab) {
+        const contentMap = {
+            blocks: 'blocksTabContent',
+            block: 'blockDetailsTabContent',
+            tx: 'txDetailsTabContent',
+            address: 'addressHistoryTabContent',
+            search: 'searchTabContent'
+        };
+        const tabMap = {
+            blocks: 'blocksTab',
+            block: 'blockDetailsTab',
+            tx: 'txDetailsTab',
+            address: 'addressHistoryTab',
+            search: 'searchTab'
+        };
+        $('.tab-pane').removeClass('active');
+        $('.nav-tabs li').removeClass('active');
+        if (contentMap[tab]) $(`#${contentMap[tab]}`).addClass('active');
+        if (tabMap[tab]) $(`#${tabMap[tab]}`).addClass('active');
+
+        $('#errorSearch, #searchResults').hide();
+
+        if (state.activeTab !== "blocks" && tab === "blocks") {
+            if (state.currentPage === 1) {
+                loadLatestBlocks(state.currentPage);
+                fetchLatestHeight();
+            }
+        }
+        state.activeTab = tab;
+    }
+
+    function loadLatestBlocks(page = 1) {
+        const limit = state.blocksPerPage;
+        const url = `${state.API_BASE}/blocks?limit=${limit}&page=${page}`;
+        state.loadingBlocks = true;
+        $('#loadingBlocks').show();
+        $('#errorBlocks').hide();
+        $('#noBlocks').hide();
+        $('#paginationContainer').hide();
+        $.get(url)
+            .done(data => {
+                const blocks = (data && data.blocks) ? data.blocks :
+                    (Array.isArray(data) ? data : []);
+                blocks.forEach(b => {
+                    if (Array.isArray(b.txs)) b.txCount = b.txs.length;
+                    else if (typeof b.nTx !== 'undefined') b.txCount = Number(b.nTx) || 0;
+                    else b.txCount = b.txCount || 0;
+                });
+                if (blocks.length) state.latestHeight = blocks[0].height;
+                state.blocks = blocks;
+                state.totalBlocks = data.total || blocks.length;
+                state.totalPages = Math.ceil(state.totalBlocks / limit);
+                if (page !== state.currentPage) {
+                    $('html, body').scrollTop(0);
+                }
+                state.currentPage = page;
+                updatePagination();
+                state.lastUpdated = new Date();
+                $('#lastUpdated').text(formatDate(state.lastUpdated.getTime() / 1000));
+                renderBlocks();
+                $('#paginationContainer').show();
+                $('#loadingBlocks').hide();
+                state.loadingBlocks = false;
+            })
+            .fail(err => {
+                $('#errorBlocks')
+                    .text('Failed to load blocks: ' + (err.statusText ||
+                        (err.responseJSON && JSON.stringify(err.responseJSON)) ||
+                        'Unknown error'));
+                $('#errorBlocks').show();
+                $('#loadingBlocks').hide();
+                state.loadingBlocks = false;
+            });
+    }
+
+    function updatePagination() {
+        const $pagination = $('#pagination');
+        $pagination.empty();
+        const totalPages = state.totalPages;
+        const currentPage = state.currentPage;
+
+        const prevLi = $('<li>').addClass('page-item');
+        if (currentPage === 1) prevLi.addClass('disabled');
+        prevLi.append(
+            $('<a>').addClass('page-link')
+                .attr('href', '#')
+                .text('«')
+                .on('click', e => {
+                    e.preventDefault();
+                    if (currentPage > 1) loadLatestBlocks(currentPage - 1);
+                })
+        );
+        $pagination.append(prevLi);
+
+        const addPage = (p) => {
+            const li = $('<li>').addClass('page-item');
+            if (p === currentPage) li.addClass('active');
+            li.append(
+                $('<a>').addClass('page-link')
+                    .attr('href', '#')
+                    .text(p)
+                    .on('click', e => {
+                        e.preventDefault();
+                        loadLatestBlocks(p);
+                    })
+            );
+            $pagination.append(li);
+        };
+
+        if (totalPages <= 7) {
+            for (let i = 1; i <= totalPages; i++) addPage(i);
+        } else {
+            addPage(1);
+            if (currentPage <= 4) {
+                for (let i = 2; i <= 5; i++) addPage(i);
+                $pagination.append($('<li class="page-item disabled"><span class="page-link">…</span></li>'));
+            } else if (currentPage >= totalPages - 3) {
+                $pagination.append($('<li class="page-item disabled"><span class="page-link">…</span></li>'));
+                for (let i = totalPages - 4; i <= totalPages - 1; i++) addPage(i);
+            } else {
+                $pagination.append($('<li class="page-item disabled"><span class="page-link">…</span></li>'));
+                for (let i = currentPage - 1; i <= currentPage + 1; i++) addPage(i);
+                $pagination.append($('<li class="page-item disabled"><span class="page-link">…</span></li>'));
+            }
+            addPage(totalPages);
+        }
+
+        const nextLi = $('<li>').addClass('page-item');
+        if (currentPage === totalPages) nextLi.addClass('disabled');
+        nextLi.append(
+            $('<a>').addClass('page-link')
+                .attr('href', '#')
+                .text('»')
+                .on('click', e => {
+                    e.preventDefault();
+                    if (currentPage < totalPages) loadLatestBlocks(currentPage + 1);
+                })
+        );
+        $pagination.append(nextLi);
+
+        $('#paginationInfo').text(
+            `Page ${currentPage} of ${totalPages} | Showing ${(currentPage - 1) * state.blocksPerPage + 1}–${Math.min(currentPage * state.blocksPerPage, state.totalBlocks)} of ${state.totalBlocks}`
+        );
+    }
+
+    function renderBlocks() {
+        const container = $('#blocksContainer');
+        container.empty();
+        const blocks = state.blocks;
+        if (!blocks || blocks.length === 0) {
+            $('#noBlocks').show();
+            return;
+        }
+        blocks.forEach(block => {
+            const blockItem = $('<div>').addClass('block-item');
+            const blockHeader = $('<div>').addClass('block-header');
+            const heightLink = $('<a>').attr('href', '#')
+                .text(block.height)
+                .on('click', e => {
+                    e.preventDefault();
+                    showBlock(block.height);
+                });
+            blockHeader.append($('<h4>').text('Height: ').append(heightLink));
+            blockHeader.append($('<p>').text(`Hash: ${block.hash}`));
+            blockHeader.append($('<p>').text(`Time: ${formatDate(block.time)}`));
+            blockHeader.append($('<p>').text(`Difficulty: ${block.difficulty !== undefined ? block.difficulty : "~"}`));
+            blockHeader.append($('<p>').text(`Size: ${block.size !== undefined ? block.size + "B" : "~"}`));
+            blockHeader.append($('<p>').text(`Minted Cure: ${block.mint !== undefined ? block.mint : "~"}`));
+            blockHeader.append($('<p>').text(`Mint Method: ${block.flags !== undefined ? block.flags : "~"}`));
+
+            blockHeader.append($('<p>').text(`Transactions: ${block.txCount}`));
+            const prevHashLink = $('<a>').addClass('block-link')
+                .attr('href', '#')
+                .text(block.prev_block_hash || block.prevhash)
+                .on('click', e => {
+                    e.preventDefault();
+                    showBlockByHash(block.prev_block_hash || block.prevhash);
+                });
+            blockHeader.append($('<p>').text('Previous Hash: ').append(prevHashLink));
+            blockItem.append(blockHeader);
+            container.append(blockItem);
+        });
+    }
+
+    function fetchLatestHeight() {
+        $.get(`${state.API_BASE}/blocks/height`)
+            .done(d => {
+                state.latestHeight = d.height;
+                updateHeaderHeight();
+            })
+            .fail(err => console.error('height-fetch', err));
+    }
+
+    function showBlock(height) {
+        if (!height) {
+            $('#errorBlock').text('Invalid block identifier.').show();
+            return;
+        }
+        if (!/^\d+$/.test(String(height))) {
+            $('#errorBlock').text('Block endpoint requires numeric height.').show();
+            return;
+        }
+        state.loadingBlock = true;
+        $('#loadingBlock').show();
+        $('#errorBlock').hide();
+        $('#blockDetailsContainer').empty();
+        $('#blockTransactionsContainer').empty();
+        $('#loadingBlockTxs').hide();
+        $('#errorBlockTxs').hide();
+        $('#noBlockTxs').hide();
+        $.get(`${state.API_BASE}/block/${encodeURIComponent(String(height))}`)
+            .done(block => {
+                if (!block) {
+                    $('#errorBlock').text('Block not found.').show();
+                    $('#loadingBlock').hide();
+                    return;
+                }
+                block.txCount = Array.isArray(block.txs) ? block.txs.length : (typeof block.nTx !== 'undefined' ? Number(block.nTx) : (block.txCount || 0));
+                state.currentBlock = block;
+                $('#loadingBlock').hide();
+                renderBlockDetails();
+                setActiveTab('block');
+                loadBlockTransactions(block.height);
+            })
+            .fail(err => {
+                $('#errorBlock')
+                    .text('Failed to load block: ' + (err.statusText || (err.responseJSON && JSON.stringify(err.responseJSON)) || 'Unknown error'));
+                $('#errorBlock').show();
+                $('#loadingBlock').hide();
+            });
+    }
+
+    function renderBlockDetails() {
+        const container = $('#blockDetailsContainer');
+        container.empty();
+        const b = state.currentBlock;
+        if (!b) return;
+
+
+        container.append($('<p>').text(`Height: ${b.height}`));
+        container.append($('<p>').text(`Hash: ${b.hash}`));
+        container.append($('<p>').text(`Time: ${formatDate(b.time)}`));
+        container.append($('<p>').text(`Transactions: ${b.txCount}`));
+        container.append($('<p>').text(`Difficulty: ${b.difficulty !== undefined ? b.difficulty : "~"}`));
+        container.append($('<p>').text(`Size: ${b.size !== undefined ? b.size + "B" : "~"}`));
+        container.append($('<p>').text(`Minted Cure: ${b.mint !== undefined ? b.mint : "~"}`));
+        container.append($('<p>').text(`Mint Method: ${b.flags !== undefined ? b.flags : "~"}`));
+    }
+
+    function showBlockByHash(hash) {
+        if (!hash) return;
+        const found = state.blocks.find(b => b.hash === hash || b.prev_block_hash === hash || b.prevhash === hash);
+        if (found) {
+            showBlock(found.height);
+            return;
+        }
+        $('#errorBlock').text('Block hash not found in current view. Please search by height.').show();
+    }
+
+    function loadBlockTransactions(height) {
+        if (!height) return;
+        state.loadingBlockTxs = true;
+        $('#loadingBlockTxs').show();
+        $('#errorBlockTxs').hide();
+        $('#blockTransactionsContainer').empty();
+        $.get(`${state.API_BASE}/block/${encodeURIComponent(String(height))}/txs`)
+            .done(data => {
+                let txs = [];
+                if (data.txs) txs = data.txs;
+                else if (Array.isArray(data)) txs = data;
+                else Object.keys(data).some(k => {
+                        if (Array.isArray(data[k])) {
+                            txs = data[k];
+                            return true;
+                        }
+                    });
+                state.blockTransactions = Array.isArray(txs) ? txs : [];
+                if (state.currentBlock) state.currentBlock.txCount = state.blockTransactions.length;
+                $('#loadingBlockTxs').hide();
+                renderBlockTransactions();
+            })
+            .fail(err => {
+                $('#errorBlockTxs')
+                    .text('Failed to load transactions: ' + (err.statusText || (err.responseJSON && JSON.stringify(err.responseJSON)) || 'Unknown error'));
+                $('#errorBlockTxs').show();
+                $('#loadingBlockTxs').hide();
+            });
+    }
+
+    function renderBlockTransactions() {
+        const container = $('#blockTransactionsContainer');
+        container.empty();
+        if (!state.blockTransactions.length) {
+            $('#noBlockTxs').show();
+            return;
+        }
+        const table = $('<table>').addClass('table table-sm table-responsive');
+        const thead = $('<thead>').append(
+            $('<tr>').append(
+                $('<th>').text('TxID'),
+                $('<th>').text('Version'),
+                $('<th>').text('Locktime'),
+                $('<th>').text('Inputs'),
+                $('<th>').text('Outputs')
+            )
+        );
+        table.append(thead);
+        const tbody = $('<tbody>');
+        state.blockTransactions.forEach(tx => {
+            const row = $('<tr>');
+            const txIdLink = $('<a>').attr('href', '#')
+                .text(tx.txid || tx.hash)
+                .on('click', e => {
+                    e.preventDefault();
+                    loadTransaction(tx.txid || tx.hash);
+                });
+            row.append($('<td>').append(txIdLink));
+            row.append($('<td>').text(tx.version || 'N/A'));
+            row.append($('<td>').text(tx.locktime || 'N/A'));
+
+            const inputsTd = $('<td>');
+            if (tx.vin && tx.vin.length) {
+                const inputsList = $('<ul>').addClass('list-unstyled mb-0');
+                tx.vin.forEach(input => {
+                    const li = $('<li>');
+                    if (input.coinbase) {
+                        li.text(`Coinbase: ${input.coinbase}`);
+                    } else {
+                        const prevTxLink = $('<a>').attr('href', '#')
+                            .text(input.txid || input.hash)
+                            .on('click', e => {
+                                e.preventDefault();
+                                loadTransaction(input.txid || input.hash);
+                            });
+                        const addrLinks = [];
+                        if (input.scriptSig && input.scriptSig.asm) {
+                            const potentialAddr = input.scriptSig.asm.split(' ').pop();
+                            if (/^[13][a-km-zA-HJ-NP-Z1-9]{25,34}$/.test(potentialAddr)) {
+                                const addrLink = $('<a>').attr('href', '#')
+                                    .text(potentialAddr)
+                                    .on('click', e => {
+                                        e.preventDefault();
+                                        loadAddressHistory(potentialAddr);
+                                    });
+                                addrLinks.push(addrLink);
+                            }
+                        }
+                        li.append($('<span>').text('Prev Tx: '));
+                        li.append(prevTxLink);
+                        if (addrLinks.length) {
+                            li.append(' (').append(addrLinks).append(')');
+                        }
+                    }
+                    inputsList.append(li);
+                });
+                inputsTd.append(inputsList);
+            } else {
+                inputsTd.text('N/A');
+            }
+            row.append(inputsTd);
+
+            const outputsTd = $('<td>');
+            if (tx.vout && tx.vout.length) {
+                const outputsList = $('<ul>').addClass('list-unstyled mb-0');
+                tx.vout.forEach(output => {
+                    const li = $('<li>');
+                    li.append($('<strong>').text(`Value: ${output.value || 'N/A'}`));
+                    li.append(' – ');
+                    if (output.scriptPubKey && output.scriptPubKey.addresses) {
+                        const addrLinks = output.scriptPubKey.addresses.map(addr =>
+                            $('<a>').attr('href', '#')
+                                .text(addr)
+                                .on('click', e => {
+                                    e.preventDefault();
+                                    loadAddressHistory(addr);
+                                })
+                        );
+                        addrLinks.forEach((link, i) => {
+                            li.append(link);
+                            if (i < addrLinks.length - 1) li.append(', ');
+                        });
+                    } else {
+                        li.append('No address');
+                    }
+                    outputsList.append(li);
+                });
+                outputsTd.append(outputsList);
+            } else {
+                outputsTd.text('N/A');
+            }
+            row.append(outputsTd);
+            tbody.append(row);
+        });
+        table.append(tbody);
+        container.append(table);
+    }
+
+    function loadTransaction(txid) {
+        if (!txid) return;
+        state.loadingTx = true;
+        $('#loadingTx').show();
+        $('#errorTx').hide();
+        $('#txDetailsContainer').empty();
+        setActiveTab('tx');
+        $.get(`${state.API_BASE}/tx/${encodeURIComponent(txid)}`)
+            .done(tx => {
+                if (!tx) {
+                    $('#errorTx').text('Transaction not found.').show();
+                    $('#loadingTx').hide();
+                    return;
+                }
+                state.currentTx = tx;
+                $('#loadingTx').hide();
+                renderTransactionDetails();
+            })
+            .fail(err => {
+                $('#errorTx')
+                    .text('Failed to load transaction: ' + (err.statusText || (err.responseJSON && JSON.stringify(err.responseJSON)) || 'Unknown error'));
+                $('#errorTx').show();
+                $('#loadingTx').hide();
+            });
+    }
+
+    function renderTransactionDetails() {
+        const container = $('#txDetailsContainer');
+        container.empty();
+        if (!state.currentTx) return;
+        const tx = state.currentTx;
+        const txItem = $('<div>').addClass('transaction-item');
+        txItem.append($('<h4>').text('Transaction ID: ').append($('<span>').addClass('txid').text(tx.txid || tx.hash)));
+
+        // Make block height clickable
+        const blockHeightText = tx.block_height || 'N/A';
+        const blockHeightLink = $('<a>').attr('href', '#')
+            .text(blockHeightText)
+            .on('click', e => {
+                e.preventDefault();
+                if (tx.block_height) {
+                    showBlock(tx.block_height);
+                }
+            });
+        txItem.append($('<p>').text(`Block Height: `).append(blockHeightLink));
+
+        txItem.append($('<p>').text(`Time: ${formatDate(tx.time) || 'N/A'}`));
+        txItem.append($('<p>').text(`Version: ${tx.version || 'N/A'}`));
+        txItem.append($('<p>').text(`Locktime: ${tx.locktime || 'N/A'}`));
+        if (tx.vin && tx.vin.length) {
+            const inputsSection = $('<div>').append($('<h5>').text('Inputs'));
+            tx.vin.forEach(input => {
+                const inputDiv = $('<div>');
+                if (input.coinbase) {
+                    inputDiv.append($('<p>').text(`Coinbase: ${input.coinbase}`));
+                } else {
+                    const prevTxLink = $('<a>').attr('href', '#')
+                        .text(input.txid || input.hash)
+                        .on('click', e => {
+                            e.preventDefault();
+                            loadTransaction(input.txid || input.hash);
+                        });
+                    inputDiv.append($('<p>').text('Previous Transaction: ').append(prevTxLink));
+                }
+                inputsSection.append(inputDiv);
+            });
+            txItem.append(inputsSection);
+        }
+        if (tx.vout && tx.vout.length) {
+            const outputsSection = $('<div>').append($('<h5>').text('Outputs'));
+            tx.vout.forEach(output => {
+                const outputDiv = $('<div>');
+                outputDiv.append($('<p>').text(`Value: ${output.value || 'N/A'}`));
+                outputDiv.append($('<p>').text(`Script: ${output.scriptPubKey && output.scriptPubKey.asm || 'N/A'}`));
+                if (output.scriptPubKey && output.scriptPubKey.addresses) {
+                    const addressLinks = output.scriptPubKey.addresses.map(addr =>
+                        $('<a>').attr('href', '#')
+                            .text(addr)
+                            .on('click', e => {
+                                e.preventDefault();
+                                loadAddressHistory(addr);
+                            })
+                    );
+                    outputDiv.append($('<p>').text('Addresses: ').append(addressLinks));
+                }
+                outputsSection.append(outputDiv);
+            });
+            txItem.append(outputsSection);
+        }
+        container.append(txItem);
+    }
+
+    function uniqueTxsById(txs) {
+        const seen = new Set();
+        return txs.filter(tx => {
+            const id = tx.txid || tx.hash;
+            if (seen.has(id)) return false;
+            seen.add(id);
+            return true;
+        });
+    }
+
+    function loadAddressHistory(address, page = 1) {
+        if (!address) return;
+        state.loadingAddress = true;
+        $('#loadingAddress').show();
+        $('#errorAddress').hide();
+        $('#addressHistoryContainer').empty();
+        $('#utxoContainer').empty();
+        setActiveTab('address');
+        const url = `${state.API_BASE}/address/${encodeURIComponent(address)}?page=${page}`;
+        $.get(url)
+            .done(data => {
+                const txArray = Array.isArray(data.txs) ? data.txs
+                    : Array.isArray(data.transactions) ? data.transactions
+                        : Array.isArray(data.tx) ? data.tx
+                            : [];
+                const uniqTxs = uniqueTxsById(txArray);
+                state.currentAddressHistory = {address, page, txs: uniqTxs};
+                state.currentAddressPage = page;
+                loadAddressTxCount(address, page);
+                $('#loadingAddress').hide();
+                renderAddressHistory();
+                loadUtxos(address);
+            })
+            .fail(err => {
+                $('#loadingAddress').hide();
+                $('#errorAddress')
+                    .text('Failed to load address history: ' + (err.statusText ||
+                        (err.responseJSON && JSON.stringify(err.responseJSON)) ||
+                        'Unknown error'))
+                    .show();
+            });
+    }
+
+    function computeBalance(utxos) {
+        if (!Array.isArray(utxos)) return 0;
+        return utxos.reduce((sum, utxo) => {
+            const v = parseFloat(utxo.value);
+            return !isNaN(v) ? sum + v : sum;
+        }, 0);
+    }
+
+    function updateBalanceDisplay() {
+        const balance = computeBalance(state.currentUtxos);
+
+        $("#balance-display").text(`Balance: ${balance} CURE`);
+    }
+
+    function renderAddressHistory() {
+        const container = $('#addressHistoryContainer');
+        container.empty();
+        if (!state.currentAddressHistory) return;
+        const history = state.currentAddressHistory;
+        const txs = history.txs || [];
+        const header = $('<div>').addClass('address-header mb-3');
+        header.append($('<h4>').text(`Address: ${history.address}`));
+        header.append($('<div id="qr-code">').text(""));
+        $("#qr-code").append($('<div>').text("QR Code For Easy Address Sending"));
+        header.append($('<p>').addClass('small-muted').text(`Page: ${history.page || 1}`));
+        const balanceToggle = $('<div>').addClass('balance-toggle mb-2');
+        const toggleBtn = $('<button id="balance-btn" style="color: #000000">').addClass('btn btn-sm btn-outline-primary')
+            .text(state.showBalance ? 'Hide Balance' : 'Show Balance')
+            .on('click', toggleBalanceView);
+        balanceToggle.append(toggleBtn);
+        header.append(balanceToggle);
+        container.append(header);
+        container.append(
+            $('<div id="balance-display" style="display: none;font-weight: bold;">').addClass('balance-display mb-3')
+                .text(`Balance: ~ CURE`)
+        );
+
+        const url = `${state.API_BASE}/qr/${history.address}`;
+        $.get(url)
+            .done(data => {
+                let qrarea = $("#qr-code");
+                qrarea.append(
+                    $('<img>', {
+                        src: data,
+                        alt: 'cure:' + history.address
+                    })
+                );
+                qrarea.append(
+                    $(`<a href="cure:${history.address}" style="color: green; border: 4px solid green; margin-left: 2%; padding: 5px 10px; text-decoration: none">`, {
+                        alt: 'cure:' + history.address
+                    }).text("Send Cure")
+                );
+            })
+            .fail(err => {
+
+            });
+
+        if (txs.length) {
+            const table = $('<table>').addClass('table table-sm table-responsive');
+            table.append(
+                $('<thead>').append(
+                    $('<tr>').append(
+                        $('<th>').text('TxID'),
+                        $('<th>').text('Block Height'),
+                        $('<th>').text('Type'),
+                        $('<th>').text('value'),
+                        $('<th>').text('Confirmations')
+                    )
+                )
+            );
+            const tbody = $('<tbody>');
+            txs.forEach(tx => {
+                const row = $('<tr>');
+                row.append(
+                    $('<td>').append(
+                        $('<a>').attr('href', '#')
+                            .text(tx.txid)
+                            .on('click', e => {
+                                e.preventDefault();
+                                loadTransaction(tx.txid);
+                            })
+                    )
+                );
+                const blkHeight = typeof tx.block_height === 'number' ? tx.block_height : '—';
+                row.append($('<td>').text(blkHeight));
+                let confirmations = '—';
+                if (
+                    typeof tx.block_height === 'number' &&
+                    typeof state.latestHeight === 'number'
+                ) {
+                    confirmations = state.latestHeight - tx.block_height + 1;
+                    if (confirmations < 0) confirmations = 0;
+                }
+
+                let txVal = tx.value;
+                let txType = tx.type;
+                row.append($('<td>').text(txType));
+                row.append($('<td>').text(txVal));
+                row.append($('<td>').text(confirmations));
+
+                tbody.append(row);
+            });
+            table.append(tbody);
+            container.append(table);
+        } else {
+            container.append($('<p>').text('No transaction history available.'));
+        }
+    }
+
+
+    function renderAddressPagination() {
+        const $container = $('#addressPaginationContainer');
+        const $ul = $('#addressPagination');
+        const $info = $('#addressPaginationInfo');
+        if (state.currentAddressTotalPages <= 1) {
+            $container.hide();
+            return;
+        }
+        $ul.empty();
+        const currentPage = state.currentAddressPage;
+        const totalPages = state.currentAddressTotalPages;
+
+        const $prevLi = $('<li>').addClass('page-item');
+        if (currentPage === 1) $prevLi.addClass('disabled');
+        $prevLi.append(
+            $('<a>').addClass('page-link')
+                .attr('href', '#')
+                .text('«')
+                .on('click', e => {
+                    e.preventDefault();
+                    if (currentPage > 1)
+                        loadAddressHistory(state.currentAddressHistory.address, currentPage - 1);
+                })
+        );
+        $ul.append($prevLi);
+
+        const addPage = page => {
+            const $li = $('<li>').addClass('page-item');
+            if (page === currentPage) $li.addClass('active');
+            $li.append(
+                $('<a>').addClass('page-link')
+                    .attr('href', '#')
+                    .text(page)
+                    .on('click', e => {
+                        e.preventDefault();
+                        if (page !== currentPage)
+                            loadAddressHistory(state.currentAddressHistory.address, page);
+                    })
+            );
+            $ul.append($li);
+        };
+
+        // Fixed pagination logic - maximum 7 visible pages
+        const maxVisiblePages = 7;
+
+        if (totalPages <= maxVisiblePages) {
+            // Show all pages if total is small
+            for (let p = 1; p <= totalPages; ++p) addPage(p);
+        } else {
+            // Always show first page
+            addPage(1);
+
+            // Show ellipsis if needed
+            if (currentPage > 3) {
+                $ul.append('<li class="page-item disabled"><span class="page-link">…</span></li>');
+            }
+
+            // Show pages around current page
+            if (currentPage <= 3) {
+                // Near beginning: show 2-5, then ellipsis
+                for (let p = 2; p <= Math.min(5, totalPages - 1); ++p) {
+                    addPage(p);
+                }
+            } else if (currentPage >= totalPages - 2) {
+                // Near end: show ellipsis, then last few pages
+                for (let p = Math.max(2, totalPages - 4); p <= totalPages - 1; ++p) {
+                    addPage(p);
+                }
+            } else {
+                // Middle: show 1 before and 1 after current
+                for (let p = currentPage - 1; p <= currentPage + 1; ++p) {
+                    addPage(p);
+                }
+            }
+
+            // Show ellipsis if needed
+            if (currentPage < totalPages - 2) {
+                $ul.append('<li class="page-item disabled"><span class="page-link">…</span></li>');
+            }
+
+            // Always show last page
+            addPage(totalPages);
+        }
+
+        // Create next button
+        const $nextLi = $('<li>').addClass('page-item');
+        if (currentPage === totalPages) $nextLi.addClass('disabled');
+        $nextLi.append(
+            $('<a>').addClass('page-link')
+                .attr('href', '#')
+                .text('»')
+                .on('click', e => {
+                    e.preventDefault();
+                    if (currentPage < totalPages)
+                        loadAddressHistory(state.currentAddressHistory.address, currentPage + 1);
+                })
+        );
+        $ul.append($nextLi);
+
+        // Show the pagination container
+        $info.text(`Page ${currentPage} of ${totalPages}`);
+        $container.show();
+    }
+
+    function loadUtxos(address) {
+        if (!address) return;
+        state.loadingUtxo = true;
+        $('#loadingUtxo').show();
+        $('#errorUtxo').hide();
+        $('#utxoContainer').empty();
+        $.get(`${state.API_BASE}/utxo/${encodeURIComponent(address)}`)
+            .done(data => {
+                const utxos = Array.isArray(data) ? data
+                    : Array.isArray(data.utxos) ? data.utxos
+                        : Array.isArray(data.utxo) ? data.utxo
+                            : [];
+                state.currentUtxos = utxos;
+                $('#loadingUtxo').hide();
+                renderUtxos();
+
+                //console.log(state);
+                updateBalanceDisplay();
+
+            })
+            .fail(err => {
+                $('#loadingUtxo').hide();
+                $('#errorUtxo')
+                    .text('Failed to load UTXOs: ' + (err.statusText ||
+                        (err.responseJSON && JSON.stringify(err.responseJSON)) ||
+                        'Unknown error'))
+                    .show();
+            });
+    }
+
+    function renderUtxos() {
+        const container = $('#utxoContainer');
+        container.empty();
+        if (!state.currentUtxos.length) {
+            container.append($('<p>').text('No UTXOs found for this address.'));
+            return;
+        }
+        const table = $('<table>').addClass('table table-sm table-responsive');
+        const thead = $('<thead>').append($('<tr>')
+            .append($('<th>').text('TxID'))
+            .append($('<th>').text('Output #'))
+            .append($('<th>').text('Value'))
+            .append($('<th>').text('Script'))
+            .append($('<th>').text('Addresses'))
+        );
+        table.append(thead);
+        const tbody = $('<tbody>');
+        state.currentUtxos.forEach(utxo => {
+            const row = $('<tr>');
+            row.append($('<td>').append(
+                $('<a>').attr('href', '#')
+                    .text(utxo.txid)
+                    .on('click', e => {
+                        e.preventDefault();
+                        loadTransaction(utxo.txid);
+                    })
+            ));
+            row.append($('<td>').text(utxo.vout));
+            row.append($('<td>').text(utxo.value));
+            row.append($('<td>').text(utxo.scriptPubKey && utxo.scriptPubKey.asm));
+            row.append($('<td>').text(utxo.scriptPubKey && utxo.scriptPubKey.addresses ? utxo.scriptPubKey.addresses.join(', ') : 'N/A'));
+            tbody.append(row);
+        });
+        table.append(tbody);
+        container.append(table);
+    }
+
+    function searchTransactionInternal(txid) {
+        $.get(`${state.API_BASE}/tx/${encodeURIComponent(txid)}`)
+            .done(resp => {
+                const tx = resp.data || resp;
+                if (tx) {
+                    state.searchResults = {transaction: tx};
+                    setActiveTab('tx');
+                } else {
+                    state.errorSearch = `No results found for "${txid}"`;
+                    $('#errorSearch').text(state.errorSearch).show();
+                }
+            })
+            .fail(() => {
+                state.errorSearch = `No results found for "${txid}"`;
+                $('#errorSearch').text(state.errorSearch).show();
+            })
+            .always(() => {
+                state.loadingSearch = false;
+                $('#loadingSearch').hide();
+            });
+    }
+
+    function searchAddressInternal(address) {
+        loadAddressHistory(address);
+        const historyPromise = $.get(`${state.API_BASE}/address/${encodeURIComponent(address)}`);
+        const utxoPromise = $.get(`${state.API_BASE}/utxo/${encodeURIComponent(address)}`);
+        $.when(historyPromise, utxoPromise)
+            .done((historyResp, utxoResp) => {
+                const history = historyResp[0] || null;
+                const utxos = utxoResp[0] || null;
+                const results = {};
+                if (history && history.txs) {
+                    results.addressHistory = {
+                        address,
+                        page: history.page || 1,
+                        txs: Array.isArray(history.txs) ? history.txs : []
+                    };
+                }
+                if (Array.isArray(utxos)) {
+                    results.utxos = utxos;
+                } else if (utxos && Array.isArray(utxos.utxos)) {
+                    results.utxos = utxos.utxos;
+                } else {
+                    results.utxos = [];
+                }
+                state.searchResults = results;
+                setActiveTab('address');
+            })
+            .fail(() => {
+                state.errorSearch = `No results found for address: ${address}`;
+                $('#errorSearch').text(state.errorSearch).show();
+            })
+            .always(() => {
+                state.loadingSearch = false;
+                $('#loadingSearch').hide();
+            });
+    }
+
+    function search() {
+        let q = $('#searchQuery').val() || '';
+        q = q.trim();
+        if (!q) {
+            state.errorSearch = 'Please enter a search query.';
+            $('#errorSearch').text(state.errorSearch).show();
+            return;
+        }
+
+        $('#errorSearch, #searchResults').hide().empty();
+        $('#loadingSearch').show();
+        state.loadingSearch = true;
+        state.searchResults = null;
+        state.errorSearch = '';
+        state.currentAddressPage = 1;          // in case the user was looking at a page
+        state.currentAddressTotalPages = 1;    // and we need to reset it
+
+        if (/^\d+$/.test(q)) {
+            $.get(state.API_BASE + '/block/' + encodeURIComponent(q))
+                .done(function (block) {
+                    if (block && typeof block.height !== 'undefined') {
+                        // Block found
+                        block.txCount = Array.isArray(block.txs)
+                            ? block.txs.length
+                            : typeof block.nTx !== 'undefined'
+                                ? Number(block.nTx)
+                                : (block.txCount || 0);
+                        state.searchResults = {block};
+                        state.currentBlock = block;
+                        renderBlockDetails();
+                        setActiveTab('block');
+                        loadBlockTransactions(block.height);
+                    } else {
+                        searchTransactionInternal(q);
+                    }
+                })
+                .fail(function () {
+                    searchTransactionInternal(q);
+                })
+                .always(function () {
+                    $('#loadingSearch').hide();
+                    state.loadingSearch = false;
+                });
+            return;
+        }
+
+        if (/^[0-9a-fA-F]{64}$/.test(q)) {
+            $.get(state.API_BASE + '/tx/' + encodeURIComponent(q))
+                .done(function (tx) {
+                    if (tx && (tx.txid || tx.hash)) {
+                        // Transaction found
+                        state.searchResults = {transaction: tx};
+                        state.currentTx = tx;
+                        renderTransactionDetails();
+                        setActiveTab('tx');
+                    } else {
+                        $.get(state.API_BASE + '/block/' + encodeURIComponent(q))
+                            .done(function (block) {
+                                if (block && typeof block.height !== 'undefined') {
+                                    block.txCount = Array.isArray(block.txs)
+                                        ? block.txs.length
+                                        : typeof block.nTx !== 'undefined'
+                                            ? Number(block.nTx)
+                                            : (block.txCount || 0);
+                                    state.searchResults = {block};
+                                    state.currentBlock = block;
+                                    renderBlockDetails();
+                                    setActiveTab('block');
+                                    loadBlockTransactions(block.height);
+                                } else {
+                                    // Neither TX nor BLOCK
+                                    state.errorSearch = `No results found for "${q}"`;
+                                    $('#errorSearch').text(state.errorSearch).show();
+                                }
+                            })
+                            .fail(function () {
+                                state.errorSearch = `No results found for "${q}"`;
+                                $('#errorSearch').text(state.errorSearch).show();
+                            })
+                            .always(function () {
+                                $('#loadingSearch').hide();
+                                state.loadingSearch = false;
+                            });
+                    }
+                })
+                .fail(function () {
+                    $.get(state.API_BASE + '/block/' + encodeURIComponent(q))
+                        .done(function (block) {
+                            if (block && typeof block.height !== 'undefined') {
+                                block.txCount = Array.isArray(block.txs)
+                                    ? block.txs.length
+                                    : typeof block.nTx !== 'undefined'
+                                        ? Number(block.nTx)
+                                        : (block.txCount || 0);
+                                state.searchResults = {block};
+                                state.currentBlock = block;
+                                renderBlockDetails();
+                                setActiveTab('block');
+                                loadBlockTransactions(block.height);
+                            } else {
+                                state.errorSearch = `No results found for "${q}"`;
+                                $('#errorSearch').text(state.errorSearch).show();
+                            }
+                        })
+                        .fail(function () {
+                            state.errorSearch = `No results found for "${q}"`;
+                            $('#errorSearch').text(state.errorSearch).show();
+                        })
+                        .always(function () {
+                            $('#loadingSearch').hide();
+                            state.loadingSearch = false;
+                        });
+                })
+                .always(function () {
+                    if (!$('#loadingSearch').is(':visible')) {
+                        $('#loadingSearch').hide();
+                    }
+                    state.loadingSearch = false;
+                });
+            return;
+        }
+
+        if (q.length >= 20 && q.length <= 45) {
+            searchAddressInternal(q);
+            return;
+        }
+
+        searchTransactionInternal(q);
+    }
+
+    function updateHeaderHeight() {
+        const heightText = state.latestHeight
+            ? `Latest Height: ${state.latestHeight}`
+            : 'Latest Height: ...';
+        $('#currentHeight').text(heightText);
+    }
+
+    function applyTheme() {
+        const dark = state.darkMode;
+        if (dark) {
+            $('body').addClass('dark-mode');
+            $('#themeToggle').text('Light Mode');
+        } else {
+            $('body').removeClass('dark-mode');
+            $('#themeToggle').text('Dark Mode');
+        }
+    }
+
+    $('#themeToggle').on('click', () => {
+        state.darkMode = !state.darkMode;
+        localStorage.setItem('cureoreumExplorerDark', state.darkMode ? '1' : '0');
+        applyTheme();
+    });
+
+    function initHeader() {
+        const saved = localStorage.getItem('cureoreumExplorerDark');
+        state.darkMode = saved === '1';
+        applyTheme();
+    }
+
+    function toggleBalanceView() {
+        state.showBalance = !state.showBalance;
+
+        let bd = $("#balance-display");
+
+        let balanceBtn = $("#balance-btn");
+
+        if (state.showBalance) {
+            bd.show();
+            balanceBtn.text("Hide Balance");
+        } else {
+            bd.hide();
+            balanceBtn.text("Show Balance");
+        }
+    }
+
+    function toggleAutoRefresh() {
+        state.autoRefreshEnabled = !state.autoRefreshEnabled;
+        $('#toggleAutoRefresh').text(state.autoRefreshEnabled ? 'Disable Auto-refresh' : 'Enable Auto-refresh');
+        $('#autoRefreshStatus').text(` | Auto-refresh: ${state.autoRefreshEnabled ? 'ON' : 'OFF'}`);
+    }
+
+    $(init);
+</script>
+</body>
+</html>
