@@ -1,4 +1,3 @@
-<details id="__DETAIL_0__"/>
 # Cureoreum – CureCoin 2.0 Blockchain Explorer
 
 > **Cureoreum** is a lightweight, single-page blockchain explorer for the **CureCoin 2.0** network.  
