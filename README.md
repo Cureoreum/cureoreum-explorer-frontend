@@ -248,7 +248,6 @@ If running behind a proxy (e.g., Nginx), ensure you do not rewrite the paths for
 
 *   **License:** MIT (Check `LICENSE` file in repo).
 *   **Credits:**
-    *   **Triii Technologies LLC** – Software Development
     *   **Cureoreum** - Data Aggregator and service provider
     *   **CureCoin** – Network & Protocol.
     *   **Bootstrap & jQuery** – Core UI Components.
