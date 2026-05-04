@@ -550,7 +550,7 @@
     </div>
     <div class="footer text-center">
         <div>Connected to <a href="https://curecoin.net">CureCoin</a> Network • Symbol: CURE</div>
-        <div>This BlockChain Explorer is built with ❤ By <a href="https://triii.org">Triii Technologies LLC</a> as an open source contribution to <a href="https://cureoreum.com">Cureoreum.com</a> Version:
+        <div><a href="https://cureoreum.com">Cureoreum.com</a> Version:
             <span id="app-version"></span></div>
     </div>
 </div>
@@ -1523,6 +1523,7 @@
         $.when(historyPromise, utxoPromise)
             .done((historyResp, utxoResp) => {
                 const history = historyResp[0] || null;
+                const utxos = utxoResp[0] || null;
                 const utxos = utxoResp[0] || null;
                 const results = {};
                 if (history && history.txs) {
